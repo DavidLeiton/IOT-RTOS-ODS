@@ -187,6 +187,11 @@ void TaskRPC(void *pv) {
  *  CALLBACK MQTT -- procesa RPC entrante y responde al dashboard
  * ------------------------------------------------------------ */
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
+    Serial.print("RPC recibido en topic: ");
+    Serial.println(topic);
+    Serial.print("Payload: ");
+    for (unsigned int i = 0; i < length; i++) Serial.print((char)payload[i]);
+    Serial.println();
     StaticJsonDocument<200> doc;
     deserializeJson(doc, payload, length);
 
@@ -201,7 +206,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
     if (strcmp(method, "setRelay") == 0) {
         cmd.type     = CMD_SET_RELAY;
-        cmd.relay_on = doc["params"];
+        cmd.relay_on = doc["params"]["state"];
         xQueueSend(xQueueRPC, &cmd, 0);
         mqttClient.publish(responseTopic.c_str(), "{\"result\":\"ok\"}");
 
